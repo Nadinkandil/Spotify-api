@@ -1,0 +1,581 @@
+{
+	"info": {
+		"_postman_id": "4141cb7f-523c-4630-a217-a75e4087fff1",
+		"name": "SpotifyTest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45541963",
+		"_collection_link": "https://nadinkandil.postman.co/workspace/API-Assignment~acc0a7eb-9209-4b52-985d-61f81d5371af/collection/45541963-4141cb7f-523c-4630-a217-a75e4087fff1?action=share&source=collection_link&creator=45541963"
+	},
+	"item": [
+		{
+			"name": "[0]GetAccessToken",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let json=pm.response.json();\r",
+							"pm.environment.set(\"access_token\",json.access_token);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "07a6f2a069d64b128e7a7cd231355f22",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "d831651fa6654022a58d089984620b4b",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://accounts.spotify.com/api/token",
+					"protocol": "https",
+					"host": [
+						"accounts",
+						"spotify",
+						"com"
+					],
+					"path": [
+						"api",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[1]SearchForTracksByKeyword",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseBody=pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status Code is 200\",function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Tracks list is not empty\",function(){\r",
+							"    pm.expect(responseBody.tracks.items.length).to.be.above(0);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"At least one track name or ablums title 'love' \",function(){\r",
+							"    pm.expect(responseBody.tracks.items.some(track =>\r",
+							"    track.name.toLowerCase().includes(\"love\") ||\r",
+							"    track.album.name.toLowerCase().includes(\"love\"))).to.be.true;\r",
+							"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/search?q=love&type=track",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "love"
+						},
+						{
+							"key": "type",
+							"value": "track"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[2]SearchForAlbumsByArtistName",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseBody=pm.response.json();\r",
+							"const albumResponseBody=pm.response.json().albums.items[0];\r",
+							"\r",
+							"pm.test(\"Status Code is 200\",function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Album has name,id,release date properties\",function(){\r",
+							"    pm.expect(albumResponseBody).to.have.property(\"name\");\r",
+							"    pm.expect(albumResponseBody).to.have.property(\"id\");\r",
+							"    pm.expect(albumResponseBody).to.have.property(\"release_date\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating album list is not empty\",function(){\r",
+							"    pm.expect(responseBody.albums.items.length).to.be.above(0);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/search?q=Eminem&type=album",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "Eminem"
+						},
+						{
+							"key": "type",
+							"value": "album"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[3]GetAlbumById",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseBody=pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status Code is 200\",function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating presence of album details\",function(){\r",
+							"    pm.expect(responseBody).to.have.property(\"album_type\");\r",
+							"    pm.expect(responseBody).to.have.property(\"artists\");\r",
+							"    pm.expect(responseBody.tracks.items.length).to.be.above(0);\r",
+							"    pm.expect(responseBody).to.have.property(\"release_date\");\r",
+							"\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/albums/4aawyAB9vmqN3uQ7FjRGTy",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"albums",
+						"4aawyAB9vmqN3uQ7FjRGTy"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[4]GetTrackById",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseBody=pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status Code is 200\",function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Track details are correct\",function(){\r",
+							"    pm.expect(responseBody).to.have.property(\"name\");\r",
+							"    pm.expect(responseBody).to.have.property(\"duration_ms\");\r",
+							"    pm.expect(responseBody).to.have.property(\"popularity\");\r",
+							"    pm.expect(responseBody).to.have.property(\"album\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/tracks/11dFghVXANMlKmJXsNCbNl",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"tracks",
+						"11dFghVXANMlKmJXsNCbNl"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[5]GetTrack'sAudioFeatures",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseBody=pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status Code is 200\",function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Track details are correct\",function(){\r",
+							"    pm.expect(responseBody).to.have.property(\"danceability\");\r",
+							"    pm.expect(responseBody).to.have.property(\"energy\");\r",
+							"    pm.expect(responseBody).to.have.property(\"tempo\");\r",
+							"    pm.expect(responseBody).to.have.property(\"valence\");\r",
+							"    pm.expect(responseBody).to.have.property(\"liveness\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/audio-features/11dFghVXANMlKmJXsNCbNl",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"audio-features",
+						"11dFghVXANMlKmJXsNCbNl"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[6]GetTrackAudioAnalysis",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseBody=pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status Code is 200\",function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Track Audio analysis are present \",function(){\r",
+							"    [\"bars\", \"beats\", \"sections\", \"segments\"].forEach(part =>\r",
+							"        pm.expect(responseBody)).to.have.property(part);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/audio-analysis/11dFghVXANMlKmJXsNCbNl",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"audio-analysis",
+						"11dFghVXANMlKmJXsNCbNl"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[7]GetCategories",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseBody=pm.response.json();\r",
+							"const items=pm.response.json().categories.items;\r",
+							"const names=pm.response.json().categories.items.map(c => c.name.toLowerCase());\r",
+							"\r",
+							"pm.test(\"Status Code is 200\",function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Categories list is not empty \",function(){\r",
+							"    pm.expect(items.length).to.be.above(0);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating categories pop,workout,chill exit\",function(){\r",
+							"    [\"pop\", \"workout\", \"chill\"].forEach(name =>\r",
+							"    pm.expect(names.includes(name)).to.be.true);\r",
+							"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/browse/categories",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"browse",
+						"categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[8]GetPlaylistForCategory",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseBody=pm.response.json().playlists.items;\r",
+							"\r",
+							"pm.test(\"Status Code is 200\",function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Playlists name,id,total properties exists\",function(){\r",
+							"    pm.expect(responseBody.length).to.be.above(0);\r",
+							"    pm.expect(responseBody[0]).to.be.property(\"name\");\r",
+							"    pm.expect(responseBody[0]).to.be.property(\"id\");\r",
+							"    pm.expect(responseBody[0].tracks).to.have.property(\"total\");\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/browse/categories/dinner/playlists",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"browse",
+						"categories",
+						"dinner",
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[9]GetFeaturedPlaylists",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseBody=pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status Code is 200\",function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Feature playlists message and items\",function(){\r",
+							"    pm.expect(responseBody).to.have.property(\"message\");\r",
+							"    pm.expect(responseBody.playlists.items.length).to.be.above(0);\r",
+							"    \r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/browse/featured-playlists",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"browse",
+						"featured-playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[10]GetNewReleases",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseBody=pm.response.json().albums.items;\r",
+							"\r",
+							"pm.test(\"Status Code is 200\",function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Feature playlists message and items\",function(){\r",
+							"    pm.expect(responseBody.length).to.be.above(0);\r",
+							"    pm.expect(responseBody[0]).to.have.property(\"name\");\r",
+							"    pm.expect(responseBody[0]).to.have.property(\"release_date\");\r",
+							"    pm.expect(responseBody[0]).to.have.property(\"total_tracks\");\r",
+							"    \r",
+							"    \r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/browse/new-releases",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"browse",
+						"new-releases"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
